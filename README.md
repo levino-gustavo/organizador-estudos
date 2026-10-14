@@ -105,6 +105,3 @@ organizador-estudos/
 ├── script.js
 └── README.md
 ```
-
-## 7. Publicar no GitHub pelo VS Code
-
