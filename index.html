@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Organizador de estudos com tarefas, foco e acompanhamento de progresso.">
+  <title>StudyFlow | Organizador de Estudos</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">S</span>
+      <div>
+        <p class="eyebrow">SEU ESPAÇO DE APRENDIZADO</p>
+        <h1>StudyFlow</h1>
+      </div>
+    </div>
+    <nav class="top-actions" aria-label="Ações principais">
+      <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema">☾</button>
+      <button class="button button-ghost" id="exportButton" type="button">Exportar dados</button>
+    </nav>
+  </header>
+
+  <main id="conteudo" class="page-shell">
+    <section class="welcome-panel">
+      <div>
+        <p class="eyebrow">PAINEL PESSOAL</p>
+        <h2>Olá! Vamos avançar um pouco hoje.</h2>
+        <p class="muted">Organize suas tarefas, proteja seu foco e acompanhe cada conquista.</p>
+      </div>
+      <div class="date-card">
+        <span class="date-icon" aria-hidden="true">▦</span>
+        <div><span id="todayLabel">Hoje</span><strong id="todayDate">Carregando data...</strong></div>
+      </div>
+    </section>
+
+    <section class="stats-grid" aria-label="Resumo do progresso">
+      <article class="stat-card">
+        <div class="stat-icon violet" aria-hidden="true">✓</div>
+        <div><p>Tarefas concluídas</p><strong id="completedCount">0</strong><small>de <span id="totalCount">0</span> tarefas</small></div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-icon blue" aria-hidden="true">◷</div>
+        <div><p>Minutos de foco</p><strong id="focusMinutes">0</strong><small>registrados nesta sessão</small></div>
+      </article>
+      <article class="stat-card">
+        <div class="stat-icon green" aria-hidden="true">↗</div>
+        <div><p>Progresso geral</p><strong id="progressPercent">0%</strong><small>um passo de cada vez</small></div>
+      </article>
+    </section>
+
+    <div class="content-grid">
+      <div class="main-column">
+        <section class="panel task-panel" aria-labelledby="tasksHeading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PLANEJAMENTO</p>
+              <h2 id="tasksHeading">Minhas tarefas</h2>
+            </div>
+            <span class="count-pill" id="visibleTaskCount">0 itens</span>
+          </div>
+          <form id="taskForm" class="task-form">
+            <div class="form-field field-wide">
+              <label for="taskTitle">O que você precisa estudar?</label>
+              <input id="taskTitle" name="title" type="text" maxlength="100" placeholder="Ex.: Revisar ponteiros em C" required>
+            </div>
+            <div class="form-field">
+              <label for="taskSubject">Matéria</label>
+              <select id="taskSubject" name="subject">
+                <option value="Programação">Programação</option>
+                <option value="Matemática">Matemática</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Faculdade">Faculdade</option>
+                <option value="Pessoal">Pessoal</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="taskPriority">Prioridade</label>
+              <select id="taskPriority" name="priority">
+                <option value="normal">Normal</option>
+                <option value="high">Alta</option>
+                <option value="low">Baixa</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="taskDueDate">Prazo</label>
+              <input id="taskDueDate" name="dueDate" type="date">
+            </div>
+            <button class="button button-primary add-task-button" type="submit">+ Adicionar tarefa</button>
+          </form>
+
+          <div class="task-tools">
+            <div class="search-wrap">
+              <label class="visually-hidden" for="taskSearch">Buscar tarefas</label>
+              <span aria-hidden="true">⌕</span>
+              <input id="taskSearch" type="search" placeholder="Buscar tarefa ou matéria...">
+            </div>
+            <div class="filter-row" role="group" aria-label="Filtrar tarefas">
+              <button class="filter-button active" type="button" data-filter="all">Todas</button>
+              <button class="filter-button" type="button" data-filter="pending">Pendentes</button>
+              <button class="filter-button" type="button" data-filter="completed">Concluídas</button>
+            </div>
+          </div>
+
+          <div class="task-list" id="taskList" aria-live="polite">
+            <div class="empty-state" id="emptyState">
+              <span class="empty-icon" aria-hidden="true">✦</span>
+              <h3>Seu espaço está pronto</h3>
+              <p>Adicione uma tarefa para começar a organizar seus estudos.</p>
+            </div>
+          </div>
+          <div class="task-footer">
+            <span id="taskFooterText">Você consegue!</span>
+            <button class="text-button" id="clearCompletedButton" type="button">Limpar concluídas</button>
+          </div>
+        </section>
+
+        <section class="panel notes-panel" aria-labelledby="notesHeading">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">ANOTAÇÕES RÁPIDAS</p>
+              <h2 id="notesHeading">Meu bloco de notas</h2>
+            </div>
+            <span class="save-indicator" id="notesSaveStatus">Salvo localmente</span>
+          </div>
+          <label class="visually-hidden" for="notesArea">Suas anotações</label>
+          <textarea id="notesArea" rows="5" maxlength="5000" placeholder="Registre ideias, dúvidas ou pontos para revisar..."></textarea>
+          <div class="notes-footer">
+            <span><span id="notesCharCount">0</span>/5000 caracteres</span>
+            <button class="button button-ghost button-small" id="clearNotesButton" type="button">Limpar notas</button>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <section class="panel focus-panel" aria-labelledby="focusHeading">
+          <div class="section-heading">
+            <div><p class="eyebrow">MODO CONCENTRAÇÃO</p><h2 id="focusHeading">Timer de foco</h2></div>
+            <span class="timer-status" id="timerStatus">Pronto</span>
+          </div>
+          <p class="muted small-copy">Escolha uma duração, afaste as distrações e foque em uma coisa por vez.</p>
+          <div class="timer-display" id="timerDisplay" role="timer" aria-live="off">25:00</div>
+          <div class="timer-progress"><div id="timerProgressBar"></div></div>
+          <div class="duration-options" role="group" aria-label="Duração do timer">
+            <button type="button" class="duration-button active" data-minutes="25">25 min</button>
+            <button type="button" class="duration-button" data-minutes="15">15 min</button>
+            <button type="button" class="duration-button" data-minutes="5">5 min</button>
+          </div>
+          <div class="timer-actions">
+            <button class="button button-primary" id="timerStartButton" type="button">Iniciar foco</button>
+            <button class="button button-ghost" id="timerResetButton" type="button">Reiniciar</button>
+          </div>
+          <p class="timer-hint" id="timerHint">Seu próximo passo começa agora.</p>
+        </section>
+
+        <section class="panel progress-panel" aria-labelledby="progressHeading">
+          <div class="section-heading">
+            <div><p class="eyebrow">CONSISTÊNCIA</p><h2 id="progressHeading">Seu progresso</h2></div>
+          </div>
+          <div class="progress-ring-wrap">
+            <div class="progress-ring" id="progressRing" style="--progress: 0%">
+              <div><strong id="ringPercent">0%</strong><span>concluído</span></div>
+            </div>
+          </div>
+          <div class="progress-legend">
+            <div><span class="legend-dot done-dot"></span><span>Concluídas</span><strong id="legendDone">0</strong></div>
+            <div><span class="legend-dot pending-dot"></span><span>Pendentes</span><strong id="legendPending">0</strong></div>
+          </div>
+          <div class="encouragement" id="encouragementMessage">Cada tarefa concluída conta.</div>
+        </section>
+
+        <section class="panel tips-panel" aria-labelledby="tipsHeading">
+          <div class="section-heading">
+            <div><p class="eyebrow">LEMBRETE DO DIA</p><h2 id="tipsHeading">Dica de estudo</h2></div>
+            <span class="tip-sparkle" aria-hidden="true">✦</span>
+          </div>
+          <p id="dailyTip">Estude em blocos curtos e faça pausas para manter a atenção.</p>
+          <button class="text-button" id="newTipButton" type="button">Outra dica ↗</button>
+        </section>
+
+        <section class="panel subject-panel" aria-labelledby="subjectHeading">
+          <div class="section-heading">
+            <div><p class="eyebrow">VISÃO GERAL</p><h2 id="subjectHeading">Por matéria</h2></div>
+          </div>
+          <div id="subjectBreakdown" class="subject-breakdown">
+            <p class="muted">Suas matérias aparecerão aqui.</p>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="panel howto-panel" aria-labelledby="howtoHeading">
+      <div class="section-heading">
+        <div><p class="eyebrow">COMECE SIMPLES</p><h2 id="howtoHeading">Um método em três passos</h2></div>
+      </div>
+      <div class="steps-grid">
+        <article class="step-card"><span>01</span><h3>Planeje</h3><p>Transforme objetivos grandes em tarefas pequenas e específicas.</p></article>
+        <article class="step-card"><span>02</span><h3>Concentre-se</h3><p>Use o timer para estudar sem alternar entre várias atividades.</p></article>
+        <article class="step-card"><span>03</span><h3>Acompanhe</h3><p>Marque o que concluiu e use o progresso para ajustar seu plano.</p></article>
+      </div>
+    </section>
+
+
+  <section class="reference-library" aria-labelledby="referenceHeading">
+    <details>
+      <summary id="referenceHeading">Biblioteca de lembretes para estudar melhor</summary>
+      <div class="reference-grid">
+        <article class="reference-card">
+          <span class="reference-number">01</span>
+          <div>
+            <h3>Defina uma meta</h3>
+            <p>Escreva o que precisa conseguir explicar ao final do estudo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">02</span>
+          <div>
+            <h3>Teste sua memória</h3>
+            <p>Feche o material e tente resumir o assunto com suas palavras.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">03</span>
+          <div>
+            <h3>Pratique ativamente</h3>
+            <p>Resolva uma questão antes de consultar a resposta.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">04</span>
+          <div>
+            <h3>Faça pausas</h3>
+            <p>Levante, beba água e descanse os olhos por alguns minutos.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">05</span>
+          <div>
+            <h3>Revise depois</h3>
+            <p>Agende uma revisão curta para outro dia.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">06</span>
+          <div>
+            <h3>Divida o conteúdo</h3>
+            <p>Quebre capítulos grandes em subtópicos menores.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">07</span>
+          <div>
+            <h3>Reduza distrações</h3>
+            <p>Deixe o celular longe durante o bloco de foco.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">08</span>
+          <div>
+            <h3>Registre dúvidas</h3>
+            <p>Anote perguntas específicas para pesquisar depois.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">09</span>
+          <div>
+            <h3>Explique em voz alta</h3>
+            <p>Ensine o conceito imaginando que alguém está aprendendo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">10</span>
+          <div>
+            <h3>Avalie o método</h3>
+            <p>Ao terminar, identifique o que funcionou e o que mudar.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">11</span>
+          <div>
+            <h3>Defina uma meta</h3>
+            <p>Escreva o que precisa conseguir explicar ao final do estudo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">12</span>
+          <div>
+            <h3>Teste sua memória</h3>
+            <p>Feche o material e tente resumir o assunto com suas palavras.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">13</span>
+          <div>
+            <h3>Pratique ativamente</h3>
+            <p>Resolva uma questão antes de consultar a resposta.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">14</span>
+          <div>
+            <h3>Faça pausas</h3>
+            <p>Levante, beba água e descanse os olhos por alguns minutos.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">15</span>
+          <div>
+            <h3>Revise depois</h3>
+            <p>Agende uma revisão curta para outro dia.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">16</span>
+          <div>
+            <h3>Divida o conteúdo</h3>
+            <p>Quebre capítulos grandes em subtópicos menores.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">17</span>
+          <div>
+            <h3>Reduza distrações</h3>
+            <p>Deixe o celular longe durante o bloco de foco.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">18</span>
+          <div>
+            <h3>Registre dúvidas</h3>
+            <p>Anote perguntas específicas para pesquisar depois.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">19</span>
+          <div>
+            <h3>Explique em voz alta</h3>
+            <p>Ensine o conceito imaginando que alguém está aprendendo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">20</span>
+          <div>
+            <h3>Avalie o método</h3>
+            <p>Ao terminar, identifique o que funcionou e o que mudar.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">21</span>
+          <div>
+            <h3>Defina uma meta</h3>
+            <p>Escreva o que precisa conseguir explicar ao final do estudo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">22</span>
+          <div>
+            <h3>Teste sua memória</h3>
+            <p>Feche o material e tente resumir o assunto com suas palavras.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">23</span>
+          <div>
+            <h3>Pratique ativamente</h3>
+            <p>Resolva uma questão antes de consultar a resposta.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">24</span>
+          <div>
+            <h3>Faça pausas</h3>
+            <p>Levante, beba água e descanse os olhos por alguns minutos.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">25</span>
+          <div>
+            <h3>Revise depois</h3>
+            <p>Agende uma revisão curta para outro dia.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">26</span>
+          <div>
+            <h3>Divida o conteúdo</h3>
+            <p>Quebre capítulos grandes em subtópicos menores.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">27</span>
+          <div>
+            <h3>Reduza distrações</h3>
+            <p>Deixe o celular longe durante o bloco de foco.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">28</span>
+          <div>
+            <h3>Registre dúvidas</h3>
+            <p>Anote perguntas específicas para pesquisar depois.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">29</span>
+          <div>
+            <h3>Explique em voz alta</h3>
+            <p>Ensine o conceito imaginando que alguém está aprendendo.</p>
+          </div>
+        </article>
+        <article class="reference-card">
+          <span class="reference-number">30</span>
+          <div>
+            <h3>Avalie o método</h3>
+            <p>Ao terminar, identifique o que funcionou e o que mudar.</p>
+          </div>
+        </article>
+      </div>
+    </details>
+  </section>
+\n    <footer class="site-footer">
+      <span>StudyFlow — feito para aprender no seu ritmo.</span>
+      <span>Seus dados ficam neste navegador.</span>
+    </footer>
+  </main>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <dialog class="confirm-dialog" id="confirmDialog">
+    <form method="dialog" class="dialog-content">
+      <span class="dialog-icon" aria-hidden="true">?</span>
+      <h2 id="dialogTitle">Confirmar ação</h2>
+      <p id="dialogMessage">Deseja continuar?</p>
+      <div class="dialog-actions">
+        <button class="button button-ghost" value="cancel">Cancelar</button>
+        <button class="button button-primary" id="dialogConfirmButton" value="confirm">Confirmar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Área complementar com dicas acessíveis e explicações das ferramentas. -->
+  <section class="sr-documentation" aria-label="Informações de uso">
+    <h2>Como usar o StudyFlow</h2>
+    <p>Cadastre uma tarefa, selecione uma matéria e escolha a prioridade.</p>
+    <p>Use a busca para encontrar tarefas pelo título ou pela matéria.</p>
+    <p>Os filtros permitem visualizar todas as tarefas, apenas pendentes ou concluídas.</p>
+    <p>Marque a caixa de uma tarefa quando terminar o estudo correspondente.</p>
+    <p>O painel de progresso acompanha as tarefas concluídas.</p>
+    <p>O timer ajuda a separar o tempo de foco das pausas.</p>
+    <p>As anotações são salvas automaticamente neste navegador.</p>
+    <p>O botão de exportação gera um arquivo JSON com os dados do aplicativo.</p>
+    <p>O tema pode ser alternado entre claro e escuro.</p>
+    <p>Os dados são armazenados localmente usando localStorage.</p>
+  </section>
+
+  <section class="faq-section" aria-label="Perguntas frequentes">
+    <h2>Perguntas frequentes</h2>
+    <details class="faq-item">
+      <summary>Onde ficam minhas tarefas?</summary>
+      <p>As tarefas ficam salvas no armazenamento local deste navegador.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Posso fechar a página?</summary>
+      <p>Sim. Os dados persistem neste navegador, salvo se os dados do site forem apagados.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Como começo o timer?</summary>
+      <p>Escolha a duração e clique em Iniciar foco.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Como pauso o timer?</summary>
+      <p>Clique no botão Pausar enquanto a contagem estiver ativa.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Posso editar uma tarefa?</summary>
+      <p>Use o botão Editar no cartão da tarefa para alterar seu título.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Como removo uma tarefa?</summary>
+      <p>Use o botão Excluir no cartão e confirme a ação.</p>
+    </details>
+    <details class="faq-item">
+      <summary>O que faz Exportar dados?</summary>
+      <p>Baixa um arquivo JSON com tarefas, notas e estatísticas.</p>
+    </details>
+    <details class="faq-item">
+      <summary>O que acontece no modo escuro?</summary>
+      <p>A interface troca suas cores para reduzir o brilho da tela.</p>
+    </details>
+    <details class="faq-item">
+      <summary>A busca diferencia maiúsculas?</summary>
+      <p>Não. A busca ignora diferenças entre maiúsculas e minúsculas.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Como vejo tarefas concluídas?</summary>
+      <p>Selecione o filtro Concluídas na barra de filtros.</p>
+    </details>
+    <details class="faq-item">
+      <summary>O timer registra foco?</summary>
+      <p>Ao concluir um bloco, o tempo escolhido é somado aos minutos de foco.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Como limpo as anotações?</summary>
+      <p>Clique em Limpar notas e confirme a ação.</p>
+    </details>
+  </section>\n</body>
+</html>
